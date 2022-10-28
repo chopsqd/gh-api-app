@@ -1,14 +1,30 @@
+import axios from 'axios';
 import React, {useEffect, useState} from 'react';
 import './App.css';
 
-function App() {
-    const [selectedUser, setSelectedUser] = useState<string | null>(null)
+type SearchUserType = {
+    login: string
+    id: number
+}
+type SearchResultType = {
+    items: SearchUserType[]
+}
+
+const App = () => {
+    const [selectedUser, setSelectedUser] = useState<SearchUserType | null>(null)
+    const [users, setUsers] = useState<SearchUserType[]>([])
 
     useEffect(() => {
         if (selectedUser) {
-            document.title = selectedUser
+            document.title = selectedUser.login
         }
     }, [selectedUser])
+
+    useEffect(() => {
+        axios
+            .get<SearchResultType>(`https://api.github.com/search/users?q=bruh`)
+            .then(res => setUsers(res.data.items))
+    }, [])
 
     return <div className="App">
         <div>
@@ -18,13 +34,13 @@ function App() {
             </div>
             <ul>
                 {
-                    ['Dimych', 'Artem', 'Misha']
-                        .map(user => <li
+                    users.map(user => <li
+                            key={user.id}
                             className={selectedUser === user ? 'selected' : ''}
                             onClick={() => {
                                 setSelectedUser(user)
                             }}
-                        >{user}</li>)
+                        >{user.login}</li>)
                 }
             </ul>
         </div>

@@ -1,26 +1,38 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useEffect, useState} from 'react';
 import './App.css';
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    const [selectedUser, setSelectedUser] = useState<string | null>(null)
+
+    useEffect(() => {
+        if (selectedUser) {
+            document.title = selectedUser
+        }
+    }, [selectedUser])
+
+    return <div className="App">
+        <div>
+            <div>
+                <input placeholder={"search"}/>
+                <button>Find</button>
+            </div>
+            <ul>
+                {
+                    ['Dimych', 'Artem', 'Misha']
+                        .map(user => <li
+                            className={selectedUser === user ? 'selected' : ''}
+                            onClick={() => {
+                                setSelectedUser(user)
+                            }}
+                        >{user}</li>)
+                }
+            </ul>
+        </div>
+        <div>
+            <h2>Username</h2>
+            <div>Details</div>
+        </div>
     </div>
-  );
 }
 
 export default App;

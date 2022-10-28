@@ -9,11 +9,19 @@ type SearchUserType = {
 type SearchResultType = {
     items: SearchUserType[]
 }
+type UserType = {
+    login: string
+    id: number
+    avatar_url: string
+    followers: number
+}
 
 const App = () => {
     const [selectedUser, setSelectedUser] = useState<SearchUserType | null>(null)
+    const [userDetails, setUserDetails] = useState<UserType | null>(null)
     const [users, setUsers] = useState<SearchUserType[]>([])
-    const [tempSearch, setTempSearch] = useState('')
+    const [tempSearch, setTempSearch] = useState('Chopsqd')
+    const [searchTerm, setSearchTerm] = useState('Chopsqd')
 
     useEffect(() => {
         if (selectedUser) {
@@ -21,15 +29,19 @@ const App = () => {
         }
     }, [selectedUser])
 
-    const fetchData = (term: string) => {
+    useEffect(() => {
         axios
-            .get<SearchResultType>(`https://api.github.com/search/users?q=${term}`)
+            .get<SearchResultType>(`https://api.github.com/search/users?q=${searchTerm}`)
             .then(res => setUsers(res.data.items))
-    }
+    }, [searchTerm])
 
     useEffect(() => {
-        fetchData('Chopsqd')
-    }, [])
+        if (!!selectedUser) {
+            axios
+                .get<UserType>(`https://api.github.com/users/${selectedUser.login}`)
+                .then(res => setUserDetails(res.data))
+        }
+    }, [selectedUser])
 
     return <div className="App">
         <div>
@@ -42,8 +54,9 @@ const App = () => {
                     }}
                 />
                 <button onClick={() => {
-                    fetchData(tempSearch)
-                }}>Find</button>
+                    setSearchTerm(tempSearch)
+                }}>Find
+                </button>
             </div>
             <ul>
                 {
@@ -58,8 +71,13 @@ const App = () => {
             </ul>
         </div>
         <div>
-            <h2>Username</h2>
-            <div>Details</div>
+            <h2>{userDetails?.login ?? 'Username'}</h2>
+            {
+                userDetails && <div>
+                    <img src={userDetails.avatar_url}/><br/>
+                    {userDetails.login}, followers: {userDetails.followers}
+                </div>
+            }
         </div>
     </div>
 }

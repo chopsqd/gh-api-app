@@ -42,10 +42,36 @@ export const Search = (props: SearchPropsType) => {
     </div>
 }
 
+type UsersListPropsType = {
+    term: string
+    selectedUser: SearchUserType | null
+    onUserSelect: (user: SearchUserType) => void
+}
+export const UsersList = (props: UsersListPropsType) => {
+    const [users, setUsers] = useState<SearchUserType[]>([])
+
+    useEffect(() => {
+        axios
+            .get<SearchResultType>(`https://api.github.com/search/users?q=${props.term}`)
+            .then(res => setUsers(res.data.items))
+    }, [props.term])
+
+    return <ul>
+        {
+            users.map(user => <li
+                key={user.id}
+                className={props.selectedUser === user ? 'selected' : ''}
+                onClick={() => {
+                    props.onUserSelect(user)
+                }}
+            >{user.login}</li>)
+        }
+    </ul>
+}
+
 const App = () => {
     const [selectedUser, setSelectedUser] = useState<SearchUserType | null>(null)
     const [userDetails, setUserDetails] = useState<UserType | null>(null)
-    const [users, setUsers] = useState<SearchUserType[]>([])
     const [searchTerm, setSearchTerm] = useState('Chopsqd')
 
     useEffect(() => {
@@ -53,11 +79,7 @@ const App = () => {
             document.title = selectedUser.login
         }
     }, [selectedUser])
-    useEffect(() => {
-        axios
-            .get<SearchResultType>(`https://api.github.com/search/users?q=${searchTerm}`)
-            .then(res => setUsers(res.data.items))
-    }, [searchTerm])
+
     useEffect(() => {
         if (!!selectedUser) {
             axios
@@ -72,17 +94,7 @@ const App = () => {
                 setSearchTerm(value)
             }}/>
             <button onClick={() => setSearchTerm('Chopsqd')}>Reset</button>
-            <ul>
-                {
-                    users.map(user => <li
-                        key={user.id}
-                        className={selectedUser === user ? 'selected' : ''}
-                        onClick={() => {
-                            setSelectedUser(user)
-                        }}
-                    >{user.login}</li>)
-                }
-            </ul>
+            <UsersList term={searchTerm} selectedUser={selectedUser} onUserSelect={setSelectedUser}/>
         </div>
         <div>
             <h2>{userDetails?.login ?? 'Username'}</h2>

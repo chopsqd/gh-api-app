@@ -16,11 +16,36 @@ type UserType = {
     followers: number
 }
 
+type SearchPropsType = {
+    value: string
+    onSubmit: (fixedValue: string) => void
+}
+export const Search = (props: SearchPropsType) => {
+    const [tempSearch, setTempSearch] = useState('')
+
+    useEffect(() => {
+        setTempSearch(props.value)
+    }, [props.value])
+
+    return <div>
+        <input
+            placeholder={"search"}
+            value={tempSearch}
+            onChange={(e) => {
+                setTempSearch(e.currentTarget.value)
+            }}
+        />
+        <button onClick={() => {
+            props.onSubmit(tempSearch)
+        }}>Find
+        </button>
+    </div>
+}
+
 const App = () => {
     const [selectedUser, setSelectedUser] = useState<SearchUserType | null>(null)
     const [userDetails, setUserDetails] = useState<UserType | null>(null)
     const [users, setUsers] = useState<SearchUserType[]>([])
-    const [tempSearch, setTempSearch] = useState('Chopsqd')
     const [searchTerm, setSearchTerm] = useState('Chopsqd')
 
     useEffect(() => {
@@ -28,13 +53,11 @@ const App = () => {
             document.title = selectedUser.login
         }
     }, [selectedUser])
-
     useEffect(() => {
         axios
             .get<SearchResultType>(`https://api.github.com/search/users?q=${searchTerm}`)
             .then(res => setUsers(res.data.items))
     }, [searchTerm])
-
     useEffect(() => {
         if (!!selectedUser) {
             axios
@@ -45,19 +68,10 @@ const App = () => {
 
     return <div className="App">
         <div>
-            <div>
-                <input
-                    placeholder={"search"}
-                    value={tempSearch}
-                    onChange={(e) => {
-                        setTempSearch(e.currentTarget.value)
-                    }}
-                />
-                <button onClick={() => {
-                    setSearchTerm(tempSearch)
-                }}>Find
-                </button>
-            </div>
+            <Search value={searchTerm} onSubmit={(value: string) => {
+                setSearchTerm(value)
+            }}/>
+            <button onClick={() => setSearchTerm('Chopsqd')}>Reset</button>
             <ul>
                 {
                     users.map(user => <li

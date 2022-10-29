@@ -69,22 +69,39 @@ export const UsersList = (props: UsersListPropsType) => {
     </ul>
 }
 
+type UserDetailsPropsType = {
+    user: SearchUserType | null
+
+}
+export const UserDetails = (props: UserDetailsPropsType) => {
+    const [userDetails, setUserDetails] = useState<UserType | null>(null)
+
+    useEffect(() => {
+        if (!!props.user) {
+            axios
+                .get<UserType>(`https://api.github.com/users/${props.user.login}`)
+                .then(res => setUserDetails(res.data))
+        }
+    }, [props.user])
+
+    return <div>
+        {
+            userDetails && <div>
+                <h2>{userDetails.login ?? 'Username'}</h2>
+                <img src={userDetails.avatar_url}/><br/>
+                {userDetails.login}, followers: {userDetails.followers}
+            </div>
+        }
+    </div>
+}
+
 const App = () => {
     const [selectedUser, setSelectedUser] = useState<SearchUserType | null>(null)
-    const [userDetails, setUserDetails] = useState<UserType | null>(null)
     const [searchTerm, setSearchTerm] = useState('Chopsqd')
 
     useEffect(() => {
         if (selectedUser) {
             document.title = selectedUser.login
-        }
-    }, [selectedUser])
-
-    useEffect(() => {
-        if (!!selectedUser) {
-            axios
-                .get<UserType>(`https://api.github.com/users/${selectedUser.login}`)
-                .then(res => setUserDetails(res.data))
         }
     }, [selectedUser])
 
@@ -96,15 +113,7 @@ const App = () => {
             <button onClick={() => setSearchTerm('Chopsqd')}>Reset</button>
             <UsersList term={searchTerm} selectedUser={selectedUser} onUserSelect={setSelectedUser}/>
         </div>
-        <div>
-            <h2>{userDetails?.login ?? 'Username'}</h2>
-            {
-                userDetails && <div>
-                    <img src={userDetails.avatar_url}/><br/>
-                    {userDetails.login}, followers: {userDetails.followers}
-                </div>
-            }
-        </div>
+        <UserDetails user={selectedUser}/>
     </div>
 }
 

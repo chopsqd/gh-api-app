@@ -2,6 +2,16 @@
   width: 50%;
   display: flex;
   justify-content: space-between;
+  padding: 20px;
+}
+
+.App a {
+  text-decoration: none;
+  color: #000
+}
+
+.App a:hover {
+  text-decoration: underline;
 }
 
 .selected {
